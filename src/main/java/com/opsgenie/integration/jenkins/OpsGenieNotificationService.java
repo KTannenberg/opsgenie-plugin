@@ -222,7 +222,7 @@ public class OpsGenieNotificationService {
             }
             Job<?, ?> previousProject = previousBuild.getParent();
             if (previousProject != null) {
-                String previousProjectName = previousProject.getName();
+                String previousProjectName = previousProject.getFullName();
                 requestPayload.put("previousProjectName", previousProjectName);
             }
         }
@@ -260,7 +260,7 @@ public class OpsGenieNotificationService {
         String time = Objects.toString(build.getTimestamp().getTime());
         requestPayload.put("time", time);
 
-        String projectName = project.getName();
+        String projectName = project.getFullName();
         requestPayload.put("projectName", projectName);
 
         String displayName = build.getDisplayName();

@@ -9,6 +9,7 @@ import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Notifier;
 import hudson.tasks.Publisher;
 
+import hudson.util.Secret;
 import net.sf.json.JSONObject;
 
 import org.apache.commons.lang.StringUtils;
@@ -18,11 +19,6 @@ import org.kohsuke.stapler.export.Exported;
 
 import java.io.IOException;
 
-/**
- * @author Omer Ozkan
- * @author kaganyildiz
- * @version 09/07/17
- */
 public class OpsGenieNotifier extends Notifier {
     public static final AlertPriority[] ALERT_PRIORITIES = AlertPriority.values();
 
@@ -33,7 +29,7 @@ public class OpsGenieNotifier extends Notifier {
     private String tags;
     private boolean notifyBuildStart;
 
-    private String apiKey;
+    private Secret apiKey;
     private String apiUrl;
     private String teams;
     private AlertPriority alertPriority;
@@ -43,7 +39,7 @@ public class OpsGenieNotifier extends Notifier {
     public OpsGenieNotifier(boolean enable,
                             boolean notifyBuildStart,
                             String tags,
-                            String apiKey,
+                            Secret apiKey,
                             String apiUrl,
                             String teams,
                             String alertPriority,
@@ -90,7 +86,13 @@ public class OpsGenieNotifier extends Notifier {
                 .setPriority(alertPriority)
                 .setBuildStartPriority(notifyBuildStartPriority);
 
-        String apiKeyGiven = Util.fixNull(apiKey).isEmpty() ? getDescriptor().getApiKey() : apiKey;
+        String apiKeyGiven;
+        if(apiKey != null && !Util.fixNull(apiKey.getPlainText()).isEmpty()) {
+            apiKeyGiven = apiKey.getPlainText();
+        } else {
+            apiKeyGiven = getDescriptor().getApiKey().getPlainText();
+        }
+
         String apiUrlGiven = Util.fixNull(apiUrl).isEmpty() ? getDescriptor().getApiUrl() : apiUrl;
 
         OpsGenieNotificationRequest request =
@@ -120,7 +122,7 @@ public class OpsGenieNotifier extends Notifier {
                 "disable=" + enable +
                 ", notifyBuildStart=" + notifyBuildStart +
                 ", tags='" + tags + '\'' +
-                ", apiKey='" + apiKey + '\'' +
+                ", apiUrl='" + apiUrl + '\'' +
                 ", teams='" + teams + '\'' +
                 '}';
     }
@@ -136,7 +138,7 @@ public class OpsGenieNotifier extends Notifier {
     }
 
     @Exported
-    public String getApiKey() {
+    public Secret getApiKey() {
         return apiKey;
     }
 
@@ -174,7 +176,7 @@ public class OpsGenieNotifier extends Notifier {
          * <p/>
          * If you don't want fields to be persisted, use <tt>transient</tt>.
          */
-        private String apiKey;
+        private Secret apiKey;
         private String teams;
         private String tags;
         private String apiUrl;
@@ -201,7 +203,7 @@ public class OpsGenieNotifier extends Notifier {
 
         @Override
         public boolean configure(StaplerRequest req, JSONObject formData) throws FormException {
-            apiKey = formData.getString("apiKey");
+            apiKey = Secret.fromString((String) formData.get("apiKey"));
             apiUrl = formData.getString("apiUrl");
             tags = formData.getString("tags");
             teams = formData.getString("teams");
@@ -209,7 +211,7 @@ public class OpsGenieNotifier extends Notifier {
             return super.configure(req, formData);
         }
 
-        public String getApiKey() {
+        public Secret getApiKey() {
             return apiKey;
         }
 
@@ -232,7 +234,7 @@ public class OpsGenieNotifier extends Notifier {
         @Override
         public String toString() {
             return "DescriptorImpl{" +
-                    "apiKey='" + apiKey + '\'' +
+                    "apiUrl='" + apiUrl + '\'' +
                     ", teams='" + teams + '\'' +
                     ", tags='" + tags + '\'' +
                     '}';

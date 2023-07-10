@@ -6,6 +6,7 @@ import hudson.Launcher;
 import hudson.Util;
 import hudson.model.Run;
 import hudson.model.TaskListener;
+import hudson.util.Secret;
 import jenkins.model.Jenkins;
 import org.jenkinsci.plugins.workflow.steps.AbstractStepDescriptorImpl;
 import org.jenkinsci.plugins.workflow.steps.AbstractStepImpl;
@@ -23,7 +24,7 @@ public class OpsGenieTriggerStep extends AbstractStepImpl {
     private boolean enable;
     private boolean notifyBuildStart;
     private String tags;
-    private String apiKey;
+    private Secret apiKey;
     private String apiUrl;
     private String teams;
     private String priority;
@@ -57,12 +58,12 @@ public class OpsGenieTriggerStep extends AbstractStepImpl {
         this.teams = teams;
     }
 
-    public String getApiKey() {
+    public Secret getApiKey() {
         return apiKey;
     }
 
     @DataBoundSetter
-    public void setApiKey(String apiKey) {
+    public void setApiKey(Secret apiKey) {
         this.apiKey = apiKey;
     }
 
@@ -167,11 +168,16 @@ public class OpsGenieTriggerStep extends AbstractStepImpl {
             AlertProperties alertProperties = new AlertProperties().setTags(tagsGiven).setTeams(teamsGiven)
                     .setPriority(alertPriority).setBuildStartPriority(notifyBuildStartPriority);
 
-            String apiKeyGiven = Util.fixNull(step.apiKey).isEmpty() ? ogDesc.getApiKey() : step.apiKey;
-            String apiUrlGiven = Util.fixNull(step.apiUrl).isEmpty() ? ogDesc.getApiUrl() : step.apiUrl;
+            Secret apiKeyGiven;
+            if(step.apiKey != null && !Util.fixNull(step.apiKey.getPlainText()).isEmpty()) {
+                apiKeyGiven = step.apiKey;
+            } else {
+                apiKeyGiven = ogDesc.getApiKey();
+            }
 
+            String apiUrlGiven = Util.fixNull(step.apiUrl).isEmpty() ? ogDesc.getApiUrl() : step.apiUrl;
             OpsGenieNotificationRequest request = new OpsGenieNotificationRequest().setAlertProperties(alertProperties)
-                    .setBuild(build).setListener(listener).setApiKey(apiKeyGiven).setApiUrl(apiUrlGiven);
+                    .setBuild(build).setListener(listener).setApiKey(apiKeyGiven.getPlainText()).setApiUrl(apiUrlGiven);
 
             OpsGenieNotificationService ogService = new OpsGenieNotificationService(request);
             ogService.sendAfterBuildData();

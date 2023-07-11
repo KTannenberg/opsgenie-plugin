@@ -12,7 +12,7 @@
 
              <f:advanced>
                     <f:entry title="API Key" field="apiKey">
-                       <f:textbox name="apiKey" value="${instance.getApiKey()}" />
+                       <f:password value="${instance.getApiKey()}" />
                    </f:entry>
                    <f:entry title="Tags" field="tags">
                     <f:textbox field="tags" value="${instance.getTags()}" />

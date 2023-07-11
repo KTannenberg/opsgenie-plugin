@@ -17,7 +17,7 @@
         <f:textbox field="apiUrl" value="${descriptor.getApiUrl()}" />
     </f:entry>
     <f:entry title="API Key" field="apiKey">
-        <f:textbox field="apiKey" value="${descriptor.getApiKey()}" />
+       <f:password value="${descriptor.getApiKey()}" />
     </f:entry>
     <f:entry title="Teams" field="teams">
         <f:textbox field="teams" value="${descriptor.getTeams()}" />
